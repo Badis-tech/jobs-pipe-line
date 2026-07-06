@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Sanitized job descriptions arrive as arbitrary HTML from external job
+   boards; Tailwind's preflight strips element defaults, so restore basic
+   typography inside this container only. */
+.job-description {
+  line-height: 1.65;
+}
+.job-description p,
+.job-description ul,
+.job-description ol {
+  margin-bottom: 0.75rem;
+}
+.job-description ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+.job-description ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+}
+.job-description h1,
+.job-description h2,
+.job-description h3,
+.job-description h4 {
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+}
+.job-description a {
+  text-decoration: underline;
+}
+.job-description strong,
+.job-description b {
+  font-weight: 600;
+}

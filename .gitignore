@@ -1,0 +1,5 @@
+# local tool state
+.claude/settings.local.json
+
+# supabase CLI cache
+supabase/.temp/
