@@ -51,12 +51,19 @@ export default async function Home({
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-          Ausbildung Jobs
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand" />
+          </span>
+          Refreshed every 6 hours
+        </div>
+        <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+          Find your <span className="text-brand">Ausbildung</span> in Germany
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          {total.toLocaleString("en-GB")} postings from Remotive, Arbeitnow, Jobicy, The
-          Muse and the Bundesagentur für Arbeit, refreshed every 6 hours.
+        <p className="mt-2 text-sm text-zinc-500">
+          {total.toLocaleString("en-GB")} live postings from Remotive, Arbeitnow, Jobicy, The
+          Muse and the Bundesagentur für Arbeit.
         </p>
       </header>
 

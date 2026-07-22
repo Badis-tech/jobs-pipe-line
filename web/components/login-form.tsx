@@ -64,7 +64,7 @@ export function LoginForm({ next }: { next?: string }) {
       <button
         type="submit"
         disabled={status === "sending"}
-        className="w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        className="w-full rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-dark disabled:opacity-50"
       >
         {status === "sending" ? "Sending…" : "Send magic link"}
       </button>

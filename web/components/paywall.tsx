@@ -27,14 +27,14 @@ export function Paywall({ loggedIn, attemptedPage }: PaywallProps) {
         {loggedIn ? (
           <Link
             href={`/checkout?next=${attemptedPage}`}
-            className="mt-4 inline-block rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="mt-4 inline-block rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-dark"
           >
             Unlock unlimited — €4.99/mo
           </Link>
         ) : (
           <Link
             href={`/login?next=${encodeURIComponent(`/?page=${attemptedPage}`)}`}
-            className="mt-4 inline-block rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="mt-4 inline-block rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-dark"
           >
             Sign in to unlock — €4.99/mo
           </Link>
