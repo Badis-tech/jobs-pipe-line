@@ -7,14 +7,21 @@ import { createSupabaseServer } from "@/lib/supabase-server";
 export async function GET(request: Request) {
   const url = new URL(request.url);
 
+  // Page the user was trying to reach when they hit the paywall (e.g. "3").
+  // We send them back there after a successful payment. Digits only, defaults 3.
+  const nextRaw = url.searchParams.get("next") ?? "";
+  const nextPage = /^\d+$/.test(nextRaw) ? nextRaw : "3";
+
   const supabase = await createSupabaseServer();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   // Must be logged in to buy — otherwise we can't attach the subscription.
+  // Preserve the intended checkout page through the login round-trip.
   if (!user) {
-    return NextResponse.redirect(new URL("/login?next=/checkout", url.origin));
+    const back = encodeURIComponent(`/checkout?next=${nextPage}`);
+    return NextResponse.redirect(new URL(`/login?next=${back}`, url.origin));
   }
 
   const apiKey = process.env.LEMONSQUEEZY_API_KEY;
@@ -45,7 +52,8 @@ export async function GET(request: Request) {
             custom: { user_id: user.id },
           },
           product_options: {
-            redirect_url: `${siteUrl}/?subscribed=1`,
+            // Return the buyer to the page they were trying to unlock.
+            redirect_url: `${siteUrl}/?subscribed=1&page=${nextPage}`,
           },
         },
         relationships: {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createSupabaseBrowser } from "@/lib/supabase-browser";
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -13,10 +13,19 @@ export function LoginForm() {
     setStatus("sending");
     setError(null);
     const supabase = createSupabaseBrowser();
+
+    // Only allow safe internal paths (must start with a single "/") to avoid
+    // open-redirect abuse. Anything else falls back to home.
+    const safeNext =
+      next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    const callback = `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+      safeNext,
+    )}`;
+
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: callback,
       },
     });
     if (error) {

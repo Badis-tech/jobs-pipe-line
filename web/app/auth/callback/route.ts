@@ -6,7 +6,12 @@ import { createSupabaseServer } from "@/lib/supabase-server";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/";
+  const nextParam = url.searchParams.get("next") ?? "/";
+
+  // Only allow internal paths. Reject protocol-relative ("//host") and absolute
+  // URLs to prevent open-redirect. Falls back to home.
+  const next =
+    nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/";
 
   if (code) {
     const supabase = await createSupabaseServer();
