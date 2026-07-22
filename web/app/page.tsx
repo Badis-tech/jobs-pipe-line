@@ -1,7 +1,10 @@
-import { fetchJobs } from "@/lib/jobs";
+import { fetchJobs, FREE_PAGES } from "@/lib/jobs";
+import { isEntitled } from "@/lib/entitlement";
 import { Filters } from "@/components/filters";
 import { JobCard } from "@/components/job-card";
 import { Pagination } from "@/components/pagination";
+import { Paywall } from "@/components/paywall";
+import { createSupabaseServer } from "@/lib/supabase-server";
 
 interface SearchParams {
   q?: string;
@@ -17,12 +20,40 @@ export default async function Home({
 }) {
   const { q, source, type, page: pageParam } = await searchParams;
   const page = Math.max(1, Math.floor(Number(pageParam)) || 1);
+
+  // GATE: pages beyond the free allowance require an active subscription.
+  // We check entitlement BEFORE fetching, so locked job data never leaves the
+  // server for a non-paying user. This cannot be bypassed from the client.
+  const locked = page > FREE_PAGES;
+  if (locked) {
+    const entitled = await isEntitled();
+    if (!entitled) {
+      const supabase = await createSupabaseServer();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      return (
+        <main className="mx-auto w-full max-w-3xl px-4 py-8">
+          <header className="mb-6">
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+              Ausbildung Jobs
+            </h1>
+          </header>
+          <Filters q={q} source={source} type={type} />
+          <Paywall loggedIn={Boolean(user)} attemptedPage={page} />
+        </main>
+      );
+    }
+  }
+
   const { jobs, total, pageCount } = await fetchJobs({ q, source, type, page });
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Jobs</h1>
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+          Ausbildung Jobs
+        </h1>
         <p className="mt-1 text-sm text-zinc-500">
           {total.toLocaleString("en-GB")} postings from Remotive, Arbeitnow, Jobicy, The
           Muse and the Bundesagentur für Arbeit, refreshed every 6 hours.

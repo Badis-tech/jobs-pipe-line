@@ -18,7 +18,11 @@ export type JobListItem = Pick<
   | "remote"
 >;
 
-export const PAGE_SIZE = 20;
+export const PAGE_SIZE = 10;
+
+// Free tier: pages 1 and 2 (20 Ausbildung listings). Page 3+ requires an
+// active €4.99/mo subscription. Enforced server-side in the page component.
+export const FREE_PAGES = 2;
 
 // Sources currently ingesting; adzuna/jooble/usajobs join once their API
 // keys are configured in the Edge Function secrets.
