@@ -1,11 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Docs {
   lebenslauf: string;
   anschreiben: string;
 }
+
+// Rotating status phrases shown during the (15-30s) free-tier generation so the
+// wait feels alive instead of frozen.
+const COOKING_PHRASES = [
+  "👨‍🍳 Wir kochen deinen Lebenslauf…",
+  "📝 Formuliere das perfekte Anschreiben…",
+  "🇩🇪 Prüfe die deutschen Bewerbungsregeln…",
+  "✨ Poliere jeden Satz auf Hochglanz…",
+  "☕ Der KI-Personaler trinkt noch einen Kaffee…",
+  "📐 Richte alles nach DIN 5008 aus…",
+  "🎯 Finde die richtigen Worte für die Motivation…",
+  "🔍 Korrekturlesen auf Rechtschreibung…",
+  "Fast fertig — gleich hast du deine Bewerbung! 🚀",
+];
 
 const FIELDS: { name: string; label: string; placeholder?: string; textarea?: boolean; required?: boolean }[] = [
   { name: "fullName", label: "Vollständiger Name *", placeholder: "Max Mustermann", required: true },
@@ -100,8 +114,48 @@ export function CvGenerator() {
 
       {/* Output */}
       <div className="space-y-6">
-        <DocPanel title="Lebenslauf" content={docs?.lebenslauf} />
-        <DocPanel title="Anschreiben" content={docs?.anschreiben} />
+        {loading ? (
+          <CookingLoader />
+        ) : (
+          <>
+            <DocPanel title="Lebenslauf" content={docs?.lebenslauf} />
+            <DocPanel title="Anschreiben" content={docs?.anschreiben} />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CookingLoader() {
+  const [phrase, setPhrase] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const p = setInterval(() => setPhrase((i) => (i + 1) % COOKING_PHRASES.length), 2500);
+    const t = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => {
+      clearInterval(p);
+      clearInterval(t);
+    };
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center rounded-xl border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 px-6 py-16 text-center dark:border-zinc-800 dark:from-zinc-950 dark:to-zinc-900">
+      {/* Spinning brand ring */}
+      <div className="relative h-14 w-14">
+        <div className="absolute inset-0 rounded-full border-4 border-zinc-200 dark:border-zinc-800" />
+        <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-brand" />
+      </div>
+      <p className="mt-5 min-h-[1.5rem] text-sm font-medium text-zinc-800 transition-all dark:text-zinc-200">
+        {COOKING_PHRASES[phrase]}
+      </p>
+      <p className="mt-2 text-xs text-zinc-400">
+        {elapsed}s · Die kostenlose KI braucht meist 15–30 Sekunden
+      </p>
+      {/* Indeterminate progress bar */}
+      <div className="mt-4 h-1 w-48 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+        <div className="h-full w-1/3 animate-[loading_1.5s_ease-in-out_infinite] rounded-full bg-brand" />
       </div>
     </div>
   );

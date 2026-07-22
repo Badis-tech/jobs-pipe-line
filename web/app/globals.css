@@ -39,6 +39,12 @@ body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
 }
 
+/* Indeterminate progress bar sweep for the CV "cooking" loader. */
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
 /* Sanitized job descriptions arrive as arbitrary HTML from external job
    boards; Tailwind's preflight strips element defaults, so restore basic
    typography inside this container only. */
