@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const NAV = [
   { href: "/cv", label: "Bewerbung erstellen", icon: "✍️", exact: true },
   { href: "/cv/upload", label: "CV verbessern", icon: "📄", exact: false },
+  { href: "/cv/history", label: "Meine Bewerbungen", icon: "🗂️", exact: false },
 ];
 
 export function CvSidebar() {

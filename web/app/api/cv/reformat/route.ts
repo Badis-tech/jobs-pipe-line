@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
+import { isAdmin } from "@/lib/admin";
 import { reformatToGerman } from "@/lib/cv-engine";
+import { saveCvDocument } from "@/lib/cv-store";
 
-// Internal-only: take an existing CV/cover-letter text and reformat it into
-// proper German Ausbildung documents. Admin-gated. Key stays server-side.
+// Internal-only: reformat an existing CV/cover-letter into German documents,
+// then save under the logged-in admin. Admin-gated; key stays server-side.
 export async function POST(request: Request) {
-  // Admin gate temporarily disabled — all features open for testing.
-  // To re-lock: if (!(await isAdmin())) return NextResponse.json({ error: "unauthorized" }, { status: 403 });
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 403 });
+  }
 
   let body: {
     text?: string;
@@ -33,7 +36,17 @@ export async function POST(request: Request) {
       company: body.company,
       contactPerson: body.contactPerson,
     });
-    return NextResponse.json(docs);
+    const title = body.ausbildungTitle?.trim()
+      ? `Import — ${body.ausbildungTitle.trim()}`
+      : "Import — umgewandelte Bewerbung";
+    const id = await saveCvDocument({
+      title,
+      mode: "reformat",
+      input: { text, ...body },
+      lebenslauf: docs.lebenslauf,
+      anschreiben: docs.anschreiben,
+    });
+    return NextResponse.json({ ...docs, id });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "generation failed";
     console.error("CV reformat failed:", msg);

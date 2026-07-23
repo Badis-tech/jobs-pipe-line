@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      cv_documents: {
+        Row: {
+          anschreiben: string
+          created_at: string
+          id: string
+          input: Json | null
+          lebenslauf: string
+          mode: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anschreiben: string
+          created_at?: string
+          id?: string
+          input?: Json | null
+          lebenslauf: string
+          mode?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anschreiben?: string
+          created_at?: string
+          id?: string
+          input?: Json | null
+          lebenslauf?: string
+          mode?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           category: string | null
