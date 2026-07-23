@@ -87,11 +87,49 @@ Gib deine Antwort als striktes JSON zurück, exakt in diesem Format, ohne Markdo
 }
 
 export async function generateGermanDocs(c: CandidateInput): Promise<GeneratedDocs> {
+  return callModels([
+    { role: "system", content: SYSTEM_RULES },
+    { role: "user", content: buildUserPrompt(c) },
+  ]);
+}
+
+// Reformat an existing CV/cover letter (any language/format) into proper German
+// Ausbildung documents. Optionally target a specific Ausbildung/company.
+export async function reformatToGerman(
+  existingText: string,
+  target?: { ausbildungTitle?: string; company?: string; contactPerson?: string },
+): Promise<GeneratedDocs> {
+  const t: string[] = [];
+  if (target?.ausbildungTitle) t.push(`Angestrebte Ausbildung: ${target.ausbildungTitle}`);
+  if (target?.company) t.push(`Firma: ${target.company}`);
+  if (target?.contactPerson) t.push(`Ansprechpartner: ${target.contactPerson}`);
+
+  const prompt = `Hier ist ein bestehender Lebenslauf / eine bestehende Bewerbung (evtl. in einer anderen Sprache oder einem anderen Format).
+Wandle die Informationen in einen korrekten deutschen tabellarischen Lebenslauf UND ein passendes Anschreiben nach deutschen Standards um.
+Übersetze bei Bedarf ins Deutsche. Behalte nur echte Fakten aus dem Original — erfinde nichts. Fehlende Pflichtangaben als [Platzhalter] markieren.
+${t.length ? "\nZIEL:\n" + t.join("\n") + "\n" : ""}
+BESTEHENDE UNTERLAGEN:
+"""
+${existingText.slice(0, 12000)}
+"""
+
+Gib deine Antwort als striktes JSON zurück, ohne Markdown-Codeblöcke:
+{"lebenslauf": "<vollständiger Lebenslauf als Text>", "anschreiben": "<vollständiges Anschreiben als Text>"}`;
+
+  return callModels([
+    { role: "system", content: SYSTEM_RULES },
+    { role: "user", content: prompt },
+  ]);
+}
+
+// Shared OpenRouter caller: tries free models in order, falls through on
+// rate-limit/error, parses the JSON {lebenslauf, anschreiben} response.
+async function callModels(
+  messages: { role: string; content: string }[],
+): Promise<GeneratedDocs> {
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) throw new Error("OPENROUTER_API_KEY not configured");
 
-  // Free models on OpenRouter, tried in order — if one is rate-limited (429)
-  // we fall through to the next. All are OpenAI-compatible chat completions.
   const models = (process.env.OPENROUTER_MODELS ??
     "nvidia/nemotron-3-super-120b-a12b:free,google/gemma-4-31b-it:free,openai/gpt-oss-20b:free")
     .split(",")
@@ -108,10 +146,7 @@ export async function generateGermanDocs(c: CandidateInput): Promise<GeneratedDo
       },
       body: JSON.stringify({
         model,
-        messages: [
-          { role: "system", content: SYSTEM_RULES },
-          { role: "user", content: buildUserPrompt(c) },
-        ],
+        messages,
         temperature: 0.6,
         max_tokens: 4096,
         response_format: { type: "json_object" },

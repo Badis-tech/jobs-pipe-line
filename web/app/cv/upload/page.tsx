@@ -1,23 +1,23 @@
-import { CvGenerator } from "@/components/cv-generator";
+import { CvReformat } from "@/components/cv-reformat";
 
-// Internal tool: German CV + cover letter generator (from form).
+// Internal tool: reformat an existing CV/cover letter into German documents.
 // Admin gate + sidebar live in the shared layout (app/cv/layout.tsx).
-export default function CvPage() {
+export default function CvUploadPage() {
   return (
     <>
       <div className="mb-6">
         <div className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
-          Bewerbung erstellen
+          CV verbessern
         </div>
         <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Neue Bewerbung generieren
+          Bestehende Bewerbung umwandeln
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Lebenslauf &amp; Anschreiben nach deutschen Standards (DIN 5008, tabellarisch)
-          aus den Angaben erzeugen.
+          Vorhandenen Lebenslauf einfügen oder als .txt hochladen — wird in eine
+          korrekte deutsche Bewerbung (Lebenslauf + Anschreiben) umgewandelt.
         </p>
       </div>
-      <CvGenerator />
+      <CvReformat />
     </>
   );
 }
