@@ -49,7 +49,10 @@ export async function fetchJobs({ q, source, type, page = 1 }: JobFilters) {
     .from("jobs")
     .select(
       "id, title, company, location, source, job_type, category, tags, salary_text, published_at, remote",
-      { count: "exact" },
+      // "estimated" uses Postgres table statistics instead of scanning the whole
+      // table on every request — near-instant vs a full count("exact") scan over
+      // ~12k rows. The displayed total becomes approximate, which is fine.
+      { count: "estimated" },
     )
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false });
