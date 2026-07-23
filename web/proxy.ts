@@ -29,8 +29,10 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  // Touch the user to trigger a token refresh when needed.
-  await supabase.auth.getUser();
+  // Validate the session locally (ES256 JWKS) — no network round-trip. This
+  // keeps the auth cookie fresh for server components without the ~250ms hit
+  // of a getUser() call to the auth server on every request.
+  await supabase.auth.getClaims();
 
   return response;
 }

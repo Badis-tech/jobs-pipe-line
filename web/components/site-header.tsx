@@ -1,12 +1,9 @@
 import Link from "next/link";
-import { createSupabaseServer } from "@/lib/supabase-server";
+import { getAuth } from "@/lib/auth";
 import { signOut } from "@/app/auth/actions";
 
 export async function SiteHeader() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { email } = await getAuth();
 
   return (
     <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/80">
@@ -26,9 +23,9 @@ export async function SiteHeader() {
           >
             Bewerbung
           </Link>
-          {user ? (
+          {email ? (
             <>
-              <span className="hidden text-zinc-500 sm:inline">{user.email}</span>
+              <span className="hidden text-zinc-500 sm:inline">{email}</span>
               <form action={signOut}>
                 <button
                   type="submit"
