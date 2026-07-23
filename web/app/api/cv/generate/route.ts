@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { isAdmin } from "@/lib/admin";
 import { generateGermanDocs, type CandidateInput } from "@/lib/cv-engine";
 
 // Internal-only: generate a German Lebenslauf + Anschreiben. Gated to admin
 // emails. The Gemini API key stays server-side.
 export async function POST(request: Request) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 403 });
-  }
+  // Admin gate temporarily disabled — all features open for testing.
+  // To re-lock: if (!(await isAdmin())) return NextResponse.json({ error: "unauthorized" }, { status: 403 });
 
   let input: CandidateInput;
   try {

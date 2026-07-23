@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { isAdmin } from "@/lib/admin";
 import { reformatToGerman } from "@/lib/cv-engine";
 
 // Internal-only: take an existing CV/cover-letter text and reformat it into
 // proper German Ausbildung documents. Admin-gated. Key stays server-side.
 export async function POST(request: Request) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 403 });
-  }
+  // Admin gate temporarily disabled — all features open for testing.
+  // To re-lock: if (!(await isAdmin())) return NextResponse.json({ error: "unauthorized" }, { status: 403 });
 
   let body: {
     text?: string;

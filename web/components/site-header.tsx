@@ -19,7 +19,13 @@ export async function SiteHeader() {
             Ausbildung<span className="text-brand">Jobs</span>
           </span>
         </Link>
-        <nav className="flex items-center gap-3 text-sm">
+        <nav className="flex items-center gap-2 text-sm sm:gap-3">
+          <Link
+            href="/cv"
+            className="rounded-md px-2.5 py-1.5 font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-brand dark:text-zinc-400 dark:hover:bg-zinc-900"
+          >
+            Bewerbung
+          </Link>
           {user ? (
             <>
               <span className="hidden text-zinc-500 sm:inline">{user.email}</span>
