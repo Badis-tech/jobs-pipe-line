@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { isAdmin } from "@/lib/admin";
 import { CvSidebar } from "@/components/cv-sidebar";
 
@@ -11,7 +10,7 @@ export default async function CvLayout({ children }: { children: React.ReactNode
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl gap-6 px-4 py-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:flex-row">
       <CvSidebar />
       <div className="min-w-0 flex-1">{children}</div>
     </div>
