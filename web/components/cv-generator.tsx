@@ -213,7 +213,7 @@ const STEPS: { title: L; fields: Field[] }[] = [
 ];
 
 export function CvGenerator() {
-  const { lang, setLang, t } = useUiLang();
+  const { lang, t } = useUiLang();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Record<string, string>>({});
   const [docs, setDocs] = useState<GeneratedDocs | null>(null);
@@ -251,14 +251,7 @@ export function CvGenerator() {
 
   return (
     <div>
-      <ToolHeader
-        badge={UI.badge}
-        title={UI.title}
-        subtitle={UI.subtitle}
-        lang={lang}
-        onLang={setLang}
-        t={t}
-      />
+      <ToolHeader badge={UI.badge} title={UI.title} subtitle={UI.subtitle} />
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
         {/* Wizard */}

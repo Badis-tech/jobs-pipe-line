@@ -77,7 +77,7 @@ const UI = {
 } satisfies Record<string, L>;
 
 export function CvReformat() {
-  const { lang, setLang, t } = useUiLang();
+  const { lang, t } = useUiLang();
   const [text, setText] = useState("");
   const [ausbildungTitle, setAusbildung] = useState("");
   const [company, setCompany] = useState("");
@@ -149,14 +149,7 @@ export function CvReformat() {
 
   return (
     <div>
-      <ToolHeader
-        badge={UI.badge}
-        title={UI.title}
-        subtitle={UI.subtitle}
-        lang={lang}
-        onLang={setLang}
-        t={t}
-      />
+      <ToolHeader badge={UI.badge} title={UI.title} subtitle={UI.subtitle} />
 
       {/* Narrow input column; the A4 preview needs the rest of the width. */}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
