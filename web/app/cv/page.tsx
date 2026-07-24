@@ -2,22 +2,8 @@ import { CvGenerator } from "@/components/cv-generator";
 
 // Internal tool: German CV + cover letter generator (from form).
 // Admin gate + sidebar live in the shared layout (app/cv/layout.tsx).
+// The heading + EN/DE language toggle live inside CvGenerator so the toggle can
+// switch the whole tool's UI language.
 export default function CvPage() {
-  return (
-    <>
-      <div className="mb-6">
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
-          Bewerbung erstellen
-        </div>
-        <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Neue Bewerbung generieren
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Lebenslauf &amp; Anschreiben nach deutschen Standards (DIN 5008, tabellarisch)
-          aus den Angaben erzeugen.
-        </p>
-      </div>
-      <CvGenerator />
-    </>
-  );
+  return <CvGenerator />;
 }
