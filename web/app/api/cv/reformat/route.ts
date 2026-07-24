@@ -3,6 +3,12 @@ import { isAdmin } from "@/lib/admin";
 import { reformatToGerman } from "@/lib/cv-engine";
 import { saveCvDocument } from "@/lib/cv-store";
 
+// Measured against the live free tier: a full structured generation takes
+// 37-68s of body streaming, and we may fall through several models. The engine
+// keeps its own 150s budget so it can still return a real error message.
+// NOTE: the hosting plan must actually allow this ceiling.
+export const maxDuration = 160;
+
 // Internal-only: reformat an existing CV/cover-letter into German documents,
 // then save under the logged-in admin. Admin-gated; key stays server-side.
 export async function POST(request: Request) {
@@ -31,11 +37,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const docs = await reformatToGerman(text, {
-      ausbildungTitle: body.ausbildungTitle,
-      company: body.company,
-      contactPerson: body.contactPerson,
-    });
+    const docs = await reformatToGerman(
+      text,
+      {
+        ausbildungTitle: body.ausbildungTitle,
+        company: body.company,
+        contactPerson: body.contactPerson,
+      },
+      request.signal,
+    );
     const title = body.ausbildungTitle?.trim()
       ? `Import — ${body.ausbildungTitle.trim()}`
       : "Import — umgewandelte Bewerbung";
@@ -43,8 +53,7 @@ export async function POST(request: Request) {
       title,
       mode: "reformat",
       input: { text, ...body },
-      lebenslauf: docs.lebenslauf,
-      anschreiben: docs.anschreiben,
+      docs,
     });
     return NextResponse.json({ ...docs, id });
   } catch (e) {

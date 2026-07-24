@@ -3,6 +3,12 @@ import { isAdmin } from "@/lib/admin";
 import { generateGermanDocs, type CandidateInput } from "@/lib/cv-engine";
 import { saveCvDocument } from "@/lib/cv-store";
 
+// Measured against the live free tier: a full structured generation takes
+// 37-68s of body streaming, and we may fall through several models. The engine
+// keeps its own 150s budget so it can still return a real error message.
+// NOTE: the hosting plan must actually allow this ceiling.
+export const maxDuration = 160;
+
 // Internal-only: generate a German Lebenslauf + Anschreiben, then save it under
 // the logged-in admin's history. Admin-gated; API key stays server-side.
 export async function POST(request: Request) {
@@ -25,14 +31,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const docs = await generateGermanDocs(input);
+    const docs = await generateGermanDocs(input, request.signal);
     // Best-effort save — don't fail the response if the insert hiccups.
     const id = await saveCvDocument({
       title: `${input.fullName.trim()} — ${input.ausbildungTitle.trim()}`,
       mode: "form",
       input,
-      lebenslauf: docs.lebenslauf,
-      anschreiben: docs.anschreiben,
+      docs,
     });
     return NextResponse.json({ ...docs, id });
   } catch (e) {

@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-interface Docs {
-  lebenslauf: string;
-  anschreiben: string;
-}
+import { useState } from "react";
+import type { GeneratedDocs } from "@/lib/cv-types";
+import { CookingLoader } from "./cv-shared";
+import { CvDocument } from "./cv-document";
 
 const COOKING_PHRASES = [
   "📄 Lese die bestehenden Unterlagen…",
@@ -22,17 +20,45 @@ export function CvReformat() {
   const [ausbildungTitle, setAusbildung] = useState("");
   const [company, setCompany] = useState("");
   const [contactPerson, setContact] = useState("");
-  const [docs, setDocs] = useState<Docs | null>(null);
+  const [docs, setDocs] = useState<GeneratedDocs | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [extracting, setExtracting] = useState(false);
+  const [fileNote, setFileNote] = useState<string | null>(null);
 
+  // Upload goes through /api/cv/extract so PDF and DOCX are parsed server-side.
+  // Reading the file client-side with f.text() only ever worked for .txt — a
+  // PDF came through as binary noise and got sent to the model as-is.
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
+    // Reset the input so re-picking the same file after an error re-triggers.
+    e.target.value = "";
     if (!f) return;
+
     setFileName(f.name);
-    const content = await f.text();
-    setText(content);
+    setFileNote(null);
+    setError(null);
+    setExtracting(true);
+    try {
+      const body = new FormData();
+      body.append("file", f);
+      const res = await fetch("/api/cv/extract", { method: "POST", body });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Datei konnte nicht gelesen werden.");
+
+      setText(data.text);
+      setFileNote(
+        data.pages
+          ? `${data.pages} Seite(n) gelesen · ${data.text.length} Zeichen`
+          : `${data.text.length} Zeichen gelesen`,
+      );
+    } catch (err) {
+      setFileName(null);
+      setError(err instanceof Error ? err.message : "Datei konnte nicht gelesen werden.");
+    } finally {
+      setExtracting(false);
+    }
   }
 
   async function run() {
@@ -56,16 +82,30 @@ export function CvReformat() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
+    // Narrow input column; the A4 preview needs the rest of the width.
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
       <div>
         <h2 className="mb-3 text-lg font-bold text-zinc-900 dark:text-zinc-100">
           Bestehende Bewerbung
         </h2>
 
-        <label className="mb-3 flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 px-4 py-6 text-sm text-zinc-500 transition-colors hover:border-brand/50 dark:border-zinc-700">
-          <input type="file" accept=".txt,.md,.text" onChange={onFile} className="hidden" />
-          {fileName ? `📎 ${fileName}` : "📎 .txt-Datei hochladen oder Text unten einfügen"}
+        <label className="mb-1 flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 px-4 py-6 text-sm text-zinc-500 transition-colors hover:border-brand/50 dark:border-zinc-700">
+          <input
+            type="file"
+            accept=".pdf,.docx,.txt,.md,.text,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+            onChange={onFile}
+            disabled={extracting}
+            className="hidden"
+          />
+          {extracting
+            ? "⏳ Datei wird gelesen…"
+            : fileName
+              ? `📎 ${fileName}`
+              : "📎 PDF, DOCX oder TXT hochladen — oder Text unten einfügen"}
         </label>
+        <p className="mb-3 text-center text-xs text-zinc-400">
+          {fileNote ?? "Gescannte PDFs (reine Bilder) können nicht gelesen werden."}
+        </p>
 
         <textarea
           rows={10}
@@ -90,7 +130,7 @@ export function CvReformat() {
 
         <button
           onClick={run}
-          disabled={loading || text.trim().length < 30}
+          disabled={loading || extracting || text.trim().length < 30}
           className="mt-4 w-full rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-dark disabled:opacity-50"
         >
           {loading ? "Verarbeite…" : "In deutsche Bewerbung umwandeln"}
@@ -98,70 +138,18 @@ export function CvReformat() {
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
 
-      <div className="space-y-6">
+      <div>
         {loading ? (
-          <CookingLoader />
+          <CookingLoader phrases={COOKING_PHRASES} />
+        ) : docs ? (
+          <CvDocument docs={docs} />
         ) : (
-          <>
-            <DocPanel title="Lebenslauf" content={docs?.lebenslauf} />
-            <DocPanel title="Anschreiben" content={docs?.anschreiben} />
-          </>
+          <div className="rounded-xl border border-dashed border-zinc-300 px-6 py-16 text-center text-sm text-zinc-400 dark:border-zinc-700">
+            Noch nichts umgewandelt.
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-function CookingLoader() {
-  const [phrase, setPhrase] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
-  useEffect(() => {
-    const p = setInterval(() => setPhrase((i) => (i + 1) % COOKING_PHRASES.length), 2500);
-    const t = setInterval(() => setElapsed((s) => s + 1), 1000);
-    return () => {
-      clearInterval(p);
-      clearInterval(t);
-    };
-  }, []);
-  return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 px-6 py-16 text-center dark:border-zinc-800 dark:from-zinc-950 dark:to-zinc-900">
-      <div className="relative h-14 w-14">
-        <div className="absolute inset-0 rounded-full border-4 border-zinc-200 dark:border-zinc-800" />
-        <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-brand" />
-      </div>
-      <p className="mt-5 min-h-[1.5rem] text-sm font-medium text-zinc-800 dark:text-zinc-200">
-        {COOKING_PHRASES[phrase]}
-      </p>
-      <p className="mt-2 text-xs text-zinc-400">{elapsed}s · meist 15–30 Sekunden</p>
-      <div className="mt-4 h-1 w-48 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-        <div className="h-full w-1/3 animate-[loading_1.5s_ease-in-out_infinite] rounded-full bg-brand" />
-      </div>
-    </div>
-  );
-}
-
-function DocPanel({ title, content }: { title: string; content?: string }) {
-  const [copied, setCopied] = useState(false);
-  async function copy() {
-    if (!content) return;
-    await navigator.clipboard.writeText(content);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
-  return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800">
-      <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
-        <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{title}</h3>
-        {content && (
-          <button onClick={copy}
-            className="rounded border border-zinc-300 px-2 py-1 text-xs font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900">
-            {copied ? "Kopiert ✓" : "Kopieren"}
-          </button>
-        )}
-      </div>
-      <pre className="max-h-96 overflow-auto whitespace-pre-wrap px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200">
-        {content ?? <span className="text-zinc-400">Noch nichts generiert.</span>}
-      </pre>
-    </div>
-  );
-}

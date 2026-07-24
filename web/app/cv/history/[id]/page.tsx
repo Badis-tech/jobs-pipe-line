@@ -25,7 +25,11 @@ export default async function CvDocPage({
           {new Date(doc.created_at).toLocaleString("de-DE")}
         </p>
       </div>
-      <CvDocView lebenslauf={doc.lebenslauf} anschreiben={doc.anschreiben} />
+      <CvDocView
+        docs={doc.docs}
+        lebenslauf={doc.lebenslauf}
+        anschreiben={doc.anschreiben}
+      />
     </>
   );
 }

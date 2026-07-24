@@ -45,6 +45,120 @@ body {
   100% { transform: translateX(400%); }
 }
 
+/* --- Bewerbung: printable A4 documents ---------------------------------
+   These render a Lebenslauf / Anschreiben as real paper. Measurements are in
+   mm on purpose: the same stylesheet drives both the on-screen preview and the
+   printed page, so what the applicant sees is what the employer receives. */
+
+.cv-sheet {
+  /* Always paper-coloured — a document preview must not follow the UI theme. */
+  background: #ffffff;
+  color: #111113;
+  width: 100%;
+  max-width: 210mm; /* A4 width */
+  /* DIN 5008 margins: 25mm left, 20mm right, 25mm top/bottom. */
+  padding: 25mm 20mm 25mm 25mm;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+}
+
+/* Tabellarischer Lebenslauf: date column left, content right. */
+.cv-row {
+  display: grid;
+  grid-template-columns: 42mm 1fr;
+  gap: 0 6mm;
+  margin-bottom: 3mm;
+}
+.cv-row-label {
+  color: #3f3f46;
+}
+.cv-section-title {
+  font-weight: 700;
+  font-size: 12pt;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 0.6pt solid #111113;
+  padding-bottom: 1.5mm;
+  margin: 8mm 0 4mm;
+}
+.cv-sheet h1 {
+  font-size: 20pt;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.cv-entry-title {
+  font-weight: 600;
+}
+.cv-details {
+  margin: 1mm 0 0;
+  padding-left: 5mm;
+  list-style: disc;
+}
+
+/* Anschreiben (DIN 5008). */
+.cv-letter-address {
+  min-height: 25mm; /* Anschriftenfeld keeps its slot even when short. */
+}
+.cv-letter-date {
+  text-align: right;
+  margin: 8mm 0 12mm;
+}
+.cv-letter-subject {
+  font-weight: 700;
+  margin-bottom: 8mm;
+}
+.cv-letter-body p {
+  margin-bottom: 4mm;
+  text-align: justify;
+  hyphens: auto;
+}
+.cv-signature-gap {
+  height: 16mm; /* room for a handwritten signature */
+}
+
+@media print {
+  @page {
+    size: A4;
+    /* The sheet supplies its own DIN 5008 margins. */
+    margin: 0;
+  }
+
+  /* Print only the sheet(s) the user asked for. `visibility` rather than
+     `display` so the ancestor layout doesn't collapse and shift the page. */
+  body.cv-printing * {
+    visibility: hidden;
+  }
+  body.cv-printing .cv-print-active,
+  body.cv-printing .cv-print-active * {
+    visibility: visible;
+  }
+  body.cv-printing .cv-print-active {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .cv-sheet {
+    width: 210mm;
+    max-width: none;
+    box-shadow: none;
+    border: none;
+  }
+  /* Each document starts its own page. */
+  .cv-print-active + .cv-print-active {
+    page-break-before: always;
+  }
+  /* Never split an entry or a paragraph across pages. */
+  .cv-row,
+  .cv-letter-body p {
+    break-inside: avoid;
+  }
+  .cv-section-title {
+    break-after: avoid;
+  }
+}
+
 /* Sanitized job descriptions arrive as arbitrary HTML from external job
    boards; Tailwind's preflight strips element defaults, so restore basic
    typography inside this container only. */

@@ -17,10 +17,12 @@ export type Database = {
       cv_documents: {
         Row: {
           anschreiben: string
+          anschreiben_json: Json | null
           created_at: string
           id: string
           input: Json | null
           lebenslauf: string
+          lebenslauf_json: Json | null
           mode: string
           title: string
           updated_at: string
@@ -28,10 +30,12 @@ export type Database = {
         }
         Insert: {
           anschreiben: string
+          anschreiben_json?: Json | null
           created_at?: string
           id?: string
           input?: Json | null
           lebenslauf: string
+          lebenslauf_json?: Json | null
           mode?: string
           title?: string
           updated_at?: string
@@ -39,10 +43,12 @@ export type Database = {
         }
         Update: {
           anschreiben?: string
+          anschreiben_json?: Json | null
           created_at?: string
           id?: string
           input?: Json | null
           lebenslauf?: string
+          lebenslauf_json?: Json | null
           mode?: string
           title?: string
           updated_at?: string
